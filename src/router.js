@@ -1,30 +1,76 @@
-import Vue from "vue";
-import Router from "vue-router";
-import EventCreate from "./views/EventCreate.vue";
-import EventList from "./views/EventList.vue";
-import EventShow from "./views/EventShow.vue";
+import Vue from 'vue'
+import Router from 'vue-router'
+import EventCreate from './views/EventCreate.vue'
+import EventList from './views/EventList.vue'
+import EventShow from './views/EventShow.vue'
+import NProgress from 'nprogress'
+import store from '@/store/store'
+import NotFound from './views/NotFound.vue'
+import NetworkIssue from './views/NetworkIssue.vue'
 
-Vue.use(Router);
+Vue.use(Router)
 
-export default new Router({
-  mode: "history",
+const router = new Router({
+  mode: 'history',
   base: process.env.BASE_URL,
   routes: [
     {
-      path: "/",
-      name: "event-list",
-      component: EventList
+      path: '/',
+      name: 'event-list',
+      component: EventList,
+      props: true
     },
     {
-      path: "/event/create",
-      name: "event-create",
+      path: '/event/create',
+      name: 'event-create',
       component: EventCreate
     },
     {
-      path: "/events/:id",
-      name: "event-show",
+      path: '/events/:id',
+      name: 'event-show',
       component: EventShow,
+      props: true,
+      beforeEnter(routeTo, routeFrom, next) {
+        store
+          .dispatch('event/fetchEvent', routeTo.params.id)
+          .then(event => {
+            routeTo.params.event = event
+            next()
+          })
+          .catch(error => {
+            if (error.response && error.response.status == 404) {
+              next({ name: '404', params: { resource: 'event' } })
+            } else {
+              next({ name: 'network-issue' })
+            }
+          })
+      }
+    },
+    {
+      path: '/404',
+      name: '404',
+      component: NotFound,
       props: true
+    },
+    {
+      path: '*',
+      redirect: { name: '404', params: { resource: 'page' } }
+    },
+    {
+      path: '/network-issue',
+      name: 'network-issue',
+      component: NetworkIssue
     }
   ]
-});
+})
+
+router.beforeEach((routeTo, routeFrom, next) => {
+  NProgress.start()
+  next()
+})
+
+router.afterEach(() => {
+  NProgress.done()
+})
+
+export default router

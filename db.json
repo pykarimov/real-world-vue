@@ -231,24 +231,6 @@
       "date": "",
       "time": "5:00",
       "attendees": []
-    },
-    {
-      "id": 969119,
-      "user": {
-        "id": "abc123",
-        "name": "Adam"
-      },
-      "organizer": {
-        "id": "abc123",
-        "name": "Adam"
-      },
-      "title": "Testing Notification",
-      "description": "",
-      "location": "",
-      "date": "",
-      "time": "",
-      "attendees": [],
-      "category": "nature"
     }
   ]
 }

@@ -5,7 +5,8 @@ export const namespaced = true
 export const state = {
   events: [],
   eventsTotal: 0,
-  event: {}
+  event: {},
+  perPage: 3
 }
 
 export const mutations = {
@@ -43,8 +44,8 @@ export const actions = {
         throw err
       })
   },
-  fetchEvents({ commit, dispatch }, { perPage, page }) {
-    EventService.getEvents(perPage, page)
+  fetchEvents({ commit, dispatch, state }, { page }) {
+    return EventService.getEvents(state.perPage, page)
       .then(resp => {
         commit('SET_EVENTS_TOTAL', parseInt(resp.headers['x-total-count']))
         commit('SET_EVENTS', resp.data)
@@ -57,23 +58,17 @@ export const actions = {
         dispatch('notification/add', notification, { root: true })
       })
   },
-  fetchEvent({ commit, getters, dispatch }, id) {
+  fetchEvent({ commit, getters }, id) {
     var event = getters.getEventById(id)
 
     if (event) {
       commit('SET_EVENT', event)
+      return event
     } else {
-      EventService.getEvent(id)
-        .then(resp => {
-          commit('SET_EVENT', resp.data)
-        })
-        .catch(err => {
-          const notification = {
-            type: 'error',
-            message: `There was a problem fetching event: ${err.message}`
-          }
-          dispatch('notification/add', notification, { root: true })
-        })
+      return EventService.getEvent(id).then(resp => {
+        commit('SET_EVENT', resp.data)
+        return resp.data
+      })
     }
   }
 }
